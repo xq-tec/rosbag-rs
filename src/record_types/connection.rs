@@ -25,6 +25,8 @@ pub struct Connection<'a> {
     pub tp: &'a str,
     /// MD5 hash sum of the message type
     pub md5sum: [u8; 16],
+    /// Full text of the message definition
+    pub message_definition: &'a str,
     /// Name of node sending data (can be empty)
     pub caller_id: &'a str,
     /// Is publisher in the latching mode? (i.e. sends the last value published
@@ -50,6 +52,7 @@ impl<'a> RecordGen<'a> for Connection<'a> {
         let mut topic = None;
         let mut tp = None;
         let mut md5sum = None;
+        let mut message_definition = None;
         let mut caller_id = None;
         let mut latching = false;
 
@@ -71,15 +74,17 @@ impl<'a> RecordGen<'a> for Connection<'a> {
                     b"0" => false,
                     _ => return Err(Error::InvalidRecord),
                 },
+                "message_definition" => set_field_str(&mut message_definition, val)?,
                 _ => warn!("Unknown field in the connection header: {}", name),
             }
         }
 
-        let topic = topic.ok_or(Error::InvalidHeader)?;
+        let topic = topic.unwrap_or("");
         let tp = tp.ok_or(Error::InvalidHeader)?;
         let md5sum = md5sum.ok_or(Error::InvalidHeader)?;
+        let message_definition = message_definition.ok_or(Error::InvalidHeader)?;
         let caller_id = caller_id.unwrap_or("");
-        Ok(Self { id, storage_topic, topic, tp, md5sum, caller_id, latching })
+        Ok(Self { id, storage_topic, topic, tp, md5sum, message_definition, caller_id, latching })
     }
 }
 

@@ -68,7 +68,8 @@ impl<'a> Iterator for ChunkRecordsIterator<'a> {
         if self.cursor.left() == 0 { return None; }
 
         let header = match self.cursor.next_chunk() {
-            Ok(v) => v, Err(e) => return Some(Err(e.into())),
+            Ok(v) => v,
+            Err(e) => return Some(Err(e.into())),
         };
 
         Some(ChunkRecord::new(header, &mut self.cursor))
