@@ -8,6 +8,7 @@ pub enum Error {
     InvalidHeader,
     InvalidRecord,
     UnsupportedVersion,
+    UnsupportedCompression,
     OutOfBounds,
 }
 
@@ -24,6 +25,7 @@ impl fmt::Display for Error {
             InvalidHeader => "invalid header",
             InvalidRecord => "invalid record",
             UnsupportedVersion => "unsupported version",
+            UnsupportedCompression => "unsupported compression type",
             OutOfBounds => "out of bounds",
         };
         write!(f, "rosbag::Error: {}", s)

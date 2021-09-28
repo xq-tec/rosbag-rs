@@ -1,6 +1,5 @@
 use super::{RecordGen, HeaderGen, Error, Result};
 use super::utils::{unknown_field, set_field_u32};
-use std::borrow::Cow;
 
 use crate::msg_iter::{ChunkMessagesIterator, ChunkRecordsIterator};
 use crate::cursor::Cursor;
@@ -12,15 +11,6 @@ pub enum Compression {
     None,
 }
 
-impl Compression {
-    fn decompress(self, data: &[u8]) -> Result<Cow<'_, [u8]>> {
-        Ok(match self {
-            Compression::Bzip2 => unimplemented!(),
-            Compression::None => Cow::from(data),
-        })
-    }
-}
-
 /// Bulk storage with optional compression for messages data and connection
 /// records.
 #[derive(Debug, Clone)]
@@ -28,17 +18,17 @@ pub struct Chunk<'a> {
     /// Compression type for the data
     pub compression: Compression,
     /// Decompressed messages data and connection records
-    data: Cow<'a, [u8]>,
+    data: &'a [u8],
 }
 
 impl<'a> Chunk<'a> {
     /// Get iterator over only messages
-    pub fn iter_msgs(&self) -> ChunkMessagesIterator {
+    pub fn iter_msgs(&self) -> ChunkMessagesIterator<'a> {
         ChunkMessagesIterator::new(&self.data)
     }
 
     /// Get iterator over all internall records.
-    pub fn iter(&self) -> ChunkRecordsIterator {
+    pub fn iter(&self) -> ChunkRecordsIterator<'a> {
         ChunkRecordsIterator::new(&self.data)
     }
 }
@@ -54,8 +44,11 @@ impl<'a> RecordGen<'a> for Chunk<'a> {
 
     fn read_data(c: &mut Cursor<'a>, header: Self::Header) -> Result<Self> {
         let compression = header.compression.ok_or(Error::InvalidHeader)?;
+        if !matches!(compression, Compression::None) {
+            return Err(Error::UnsupportedCompression);
+        }
         let size = header.size.ok_or(Error::InvalidHeader)?;
-        let data = compression.decompress(c.next_chunk()?)?;
+        let data = c.next_chunk()?;
         if data.len() != size as usize {
             return Err(Error::InvalidRecord);
         }
