@@ -1,12 +1,11 @@
 [package]
 name = "rosbag"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2018"
-authors = ["Artyom Pavlov <newpavlov@gmail.com>"]
+authors = ["Artyom Pavlov <newpavlov@gmail.com>", "Adrian Willenbücher <willenbuecher@xq-tec.com>"]
 license = "MIT OR Apache-2.0"
 description = "Utilities for reading ROS bag files."
-documentation = "https://docs.rs/rosbag"
-repository = "https://github.com/SkoltechRobotics/rosbag-rs"
+repository = "https://github.com/xq-tec/rosbag-rs"
 keywords = ["ros", "datasets", "robotics"]
 
 [dependencies]
@@ -14,6 +13,3 @@ byteorder = "1"
 log = "0.4"
 hex = "0.4"
 memmap = "0.7"
-
-[badges]
-travis-ci = { repository = "SkoltechRobotics/rosbag-rs" }
